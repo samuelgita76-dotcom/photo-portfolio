@@ -23,20 +23,27 @@
       <a class="wordmark" href="#top" aria-label="Mara Ellison, home">
         MARA <span>ELLISON</span><i>®</i>
       </a>
-      <button
-        class="menu-toggle"
-        type="button"
-        aria-expanded="false"
-        aria-controls="site-navigation"
-      >
-        <span class="menu-toggle-label">MENU</span>
-        <span class="menu-toggle-icon" aria-hidden="true"><span></span><span></span></span>
-      </button>
+      <div class="header-controls">
+        <button class="theme-toggle" type="button" aria-label="Switch to dark mode" aria-pressed="false">
+          <span class="theme-toggle-icon" aria-hidden="true">☾</span>
+          <span class="theme-toggle-label">DARK MODE</span>
+        </button>
+        <button
+          class="menu-toggle"
+          type="button"
+          aria-expanded="false"
+          aria-controls="site-navigation"
+        >
+          <span class="menu-toggle-label">MENU</span>
+          <span class="menu-toggle-icon" aria-hidden="true"><span></span><span></span></span>
+        </button>
+      </div>
       <nav class="site-nav" id="site-navigation" aria-label="Main navigation">
         <a href="#work">Selected work</a>
         <a href="#essay">Photo essay</a>
         <a href="#about">About</a>
         <a class="nav-contact" href="#contact">Get in touch <span aria-hidden="true">↗</span></a>
+        <button class="editor-toggle" type="button" aria-pressed="false">EDIT THIS SITE</button>
       </nav>
     </header>
 
@@ -54,6 +61,7 @@
         </div>
         <figure class="hero-image">
           <img
+            data-editable-image="cover"
             src="https://images.unsplash.com/photo-1470252649378-9c29740c9fa8?auto=format&fit=crop&w=1800&q=85"
             alt="First light spreading over a quiet, mist-covered landscape"
             fetchpriority="high"
@@ -93,6 +101,7 @@
               aria-label="Open portrait of Maya, before the ceremony"
             >
               <img
+                data-editable-image="portrait-maya"
                 src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=1200&q=80"
                 alt="An intimate, naturally lit portrait of a woman looking into the camera"
                 loading="lazy"
@@ -115,6 +124,7 @@
               aria-label="Open documentary photograph of people gathered in London"
             >
               <img
+                data-editable-image="documentary-night"
                 src="https://images.unsplash.com/photo-1470225620780-dba8ba36b745?auto=format&fit=crop&w=1000&q=80"
                 alt="Crowds gathered together in a room lit by vivid purple and amber stage lights"
                 loading="lazy"
@@ -137,6 +147,7 @@
               aria-label="Open documentary photograph of a forest in the Pacific Northwest"
             >
               <img
+                data-editable-image="documentary-forest"
                 src="https://images.unsplash.com/photo-1513836279014-a89f7a76ae86?auto=format&fit=crop&w=1100&q=80"
                 alt="A solitary figure standing beneath a canopy of old forest trees"
                 loading="lazy"
@@ -159,6 +170,7 @@
               aria-label="Open portrait of Tomás on a Sunday"
             >
               <img
+                data-editable-image="portrait-tomas"
                 src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=1000&q=80"
                 alt="A softly lit close-up portrait of a man against a muted background"
                 loading="lazy"
@@ -190,6 +202,7 @@
         <div class="essay-grid">
           <figure class="essay-image essay-image-main">
             <img
+              data-editable-image="essay-coast"
               src="https://images.unsplash.com/photo-1500375592092-40eb2168fd21?auto=format&fit=crop&w=1600&q=85"
               alt="Ocean waves meeting a quiet, sandy shore"
               loading="lazy"
@@ -198,6 +211,7 @@
           </figure>
           <figure class="essay-image essay-image-small">
             <img
+              data-editable-image="essay-road"
               src="https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=1100&q=85"
               alt="A winding path through a mountain landscape"
               loading="lazy"
@@ -206,6 +220,7 @@
           </figure>
           <figure class="essay-image essay-image-small essay-image-bottom">
             <img
+              data-editable-image="essay-trees"
               src="https://images.unsplash.com/photo-1473448912268-2022ce9509d8?auto=format&fit=crop&w=1100&q=85"
               alt="Sunlight filtering through a dense canopy of old trees"
               loading="lazy"
@@ -226,6 +241,7 @@
         <div class="about-grid">
           <figure class="about-image">
             <img
+              data-editable-image="photographer"
               src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=1000&q=85"
               alt="A relaxed, naturally lit portrait of photographer Mara Ellison"
               loading="lazy"
@@ -310,5 +326,20 @@
       <img class="lightbox-image" src="" alt="" />
       <p class="lightbox-caption"></p>
     </dialog>
+    <input class="photo-upload-input" type="file" accept="image/*" aria-label="Choose a replacement photograph" />
+    <aside class="editor-panel" aria-label="Portfolio editing controls" hidden>
+      <span class="editor-status" role="status" aria-live="polite">Edits save privately in this browser.</span>
+      <label class="editor-contact-field">
+        <span>CONTACT EMAIL</span>
+        <input class="editor-email" type="email" autocomplete="email" placeholder="you@example.com" aria-label="Portfolio contact email" />
+      </label>
+      <label class="editor-contact-field">
+        <span>INSTAGRAM URL</span>
+        <input class="editor-instagram" type="url" placeholder="https://instagram.com/you" aria-label="Portfolio Instagram URL" />
+      </label>
+      <button class="editor-export" type="button">DOWNLOAD MY WEBSITE</button>
+      <button class="editor-reset" type="button">RESET SAMPLE CONTENT</button>
+      <button class="editor-done" type="button">DONE EDITING</button>
+    </aside>
   </body>
 </html>
