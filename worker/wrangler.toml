@@ -1,0 +1,12 @@
+name = "photo-portfolio-links"
+main = "src/index.js"
+compatibility_date = "2026-10-12"
+workers_dev = true
+
+[vars]
+SITE_URL = "https://samuelgita76-dotcom.github.io/photo-portfolio"
+
+[[d1_databases]]
+binding = "LINKS_DB"
+database_name = "photo-portfolio-links"
+database_id = "REPLACE_WITH_YOUR_D1_DATABASE_ID"
