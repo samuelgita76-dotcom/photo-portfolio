@@ -1,8 +1,0 @@
-{
-  "name": "photo-portfolio-links",
-  "private": true,
-  "type": "module",
-  "scripts": {
-    "test": "node --test"
-  }
-}

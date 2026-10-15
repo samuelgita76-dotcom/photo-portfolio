@@ -13,18 +13,11 @@ const textStorageKey = "mara-portfolio-edits-v1";
 const themeStorageKey = "mara-portfolio-theme-v1";
 const contactStorageKey = "mara-portfolio-contact-v1";
 const extraPhotosStorageKey = "mara-portfolio-extra-photos-v1";
-const linkServiceStorageKey = "mara-portfolio-link-service-v1";
 const imageDatabaseName = "mara-portfolio-images";
 const contactEmail = document.querySelector(".editor-email");
 const instagramUrl = document.querySelector(".editor-instagram");
 const exportButton = document.querySelector(".editor-export");
-const linkManager = document.querySelector(".link-manager");
-const linkServiceUrl = document.querySelector(".link-service-url");
-const linkAdminSecret = document.querySelector(".link-admin-secret");
-const linkManagerStatus = document.querySelector(".link-manager-status");
-const linkList = document.querySelector(".link-list");
 const savedText = new Map();
-const managedLinkTokens = new Map();
 let activePhotoId = null;
 let isEditing = false;
 let savedPhotosLoadError = null;
@@ -640,7 +633,7 @@ async function createStandalonePortfolio() {
 
   standalone.querySelectorAll("script").forEach((script) => script.remove());
   standalone.querySelectorAll(
-    ".editor-toggle, .editor-panel, .photo-upload-input, .extra-photo-input, .photo-editor-button, .gallery-add, .link-manager",
+    ".editor-toggle, .editor-panel, .photo-upload-input, .extra-photo-input, .photo-editor-button, .gallery-add",
   ).forEach((element) => element.remove());
 
   standalone.querySelectorAll("[data-editable-text]").forEach((element) => {
@@ -778,198 +771,6 @@ async function replacePhoto(file) {
   showEditorStatus("Photo replaced and saved in this browser.");
 }
 
-function setLinkManagerStatus(message, isError = false) {
-  linkManagerStatus.textContent = message;
-  linkManagerStatus.classList.toggle("has-error", isError);
-}
-
-function normalizeLinkServiceUrl() {
-  let serviceUrl;
-  try {
-    serviceUrl = new URL(linkServiceUrl.value.trim());
-  } catch (error) {
-    throw new Error("Enter the HTTPS address of your deployed link service.");
-  }
-  if (serviceUrl.protocol !== "https:" && serviceUrl.hostname !== "localhost") {
-    throw new Error("The link service must use HTTPS.");
-  }
-  return serviceUrl.href.replace(/\/+$/, "");
-}
-
-function saveManagedLinkTokens() {
-  try {
-    localStorage.setItem("mara-portfolio-managed-link-tokens-v1", JSON.stringify([...managedLinkTokens]));
-  } catch (error) {
-    throw new Error("The link was created, but this browser could not save its management details.");
-  }
-}
-
-async function linkServiceRequest(path, options = {}) {
-  const serviceUrl = normalizeLinkServiceUrl();
-  const adminSecret = linkAdminSecret.value.trim();
-  if (!adminSecret) {
-    throw new Error("Enter the admin secret you configured for your link service.");
-  }
-  try {
-    localStorage.setItem(linkServiceStorageKey, serviceUrl);
-  } catch (error) {
-    throw new Error("The service URL could not be saved in this browser.");
-  }
-
-  const response = await fetch(`${serviceUrl}${path}`, {
-    ...options,
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${adminSecret}`,
-      ...options.headers,
-    },
-  });
-  let result;
-  try {
-    result = await response.json();
-  } catch (error) {
-    throw new Error(`The link service returned an invalid response (HTTP ${response.status}).`);
-  }
-  if (!response.ok) {
-    throw new Error(result.error || `The link service returned HTTP ${response.status}.`);
-  }
-  return { result, serviceUrl };
-}
-
-function restoreManagedLinkTokens() {
-  try {
-    const stored = JSON.parse(localStorage.getItem("mara-portfolio-managed-link-tokens-v1") || "[]");
-    if (Array.isArray(stored)) {
-      stored.forEach((entry) => {
-        if (
-          Array.isArray(entry) &&
-          typeof entry[0] === "string" &&
-          typeof entry[1] === "string"
-        ) {
-          managedLinkTokens.set(entry[0], entry[1]);
-        }
-      });
-    }
-    linkServiceUrl.value = localStorage.getItem(linkServiceStorageKey) || "";
-  } catch (error) {
-    setLinkManagerStatus("Could not load saved link settings from this browser.", true);
-  }
-}
-
-function formatLinkDate(value) {
-  const date = new Date(value);
-  if (!Number.isFinite(date.getTime())) {
-    return "Unknown expiry";
-  }
-  return new Intl.DateTimeFormat(undefined, {
-    dateStyle: "medium",
-    timeStyle: "short",
-  }).format(date);
-}
-
-function renderManagedLinks(links, serviceUrl) {
-  linkList.replaceChildren();
-  if (!links.length) {
-    const empty = document.createElement("li");
-    empty.className = "link-empty";
-    empty.textContent = "No links yet. Create one above to get started.";
-    linkList.append(empty);
-    return;
-  }
-
-  links.forEach((item) => {
-    const row = document.createElement("li");
-    row.className = "managed-link";
-    const details = document.createElement("div");
-    const title = document.createElement("strong");
-    title.textContent = `Created ${formatLinkDate(item.createdAt)}`;
-    const expiry = document.createElement("span");
-    expiry.textContent = item.revokedAt
-      ? "Revoked"
-      : `Expires ${formatLinkDate(item.expiresAt)}`;
-    details.append(title, expiry);
-    row.append(details);
-
-    const token = managedLinkTokens.get(item.id);
-    if (token && !item.revokedAt && new Date(item.expiresAt) > new Date()) {
-      const copyButton = document.createElement("button");
-      copyButton.type = "button";
-      copyButton.textContent = "COPY";
-      copyButton.addEventListener("click", async () => {
-        try {
-          await navigator.clipboard.writeText(`${serviceUrl}/s/${encodeURIComponent(token)}`);
-          setLinkManagerStatus("Share link copied.");
-        } catch (error) {
-          setLinkManagerStatus("Could not copy the link. Check clipboard permissions.", true);
-        }
-      });
-      row.append(copyButton);
-    }
-
-    if (!item.revokedAt && new Date(item.expiresAt) > new Date()) {
-      const revokeButton = document.createElement("button");
-      revokeButton.type = "button";
-      revokeButton.textContent = "REVOKE";
-      revokeButton.addEventListener("click", async () => {
-        revokeButton.disabled = true;
-        try {
-          await linkServiceRequest(`/api/links/${encodeURIComponent(item.id)}`, { method: "DELETE" });
-          setLinkManagerStatus("Link revoked. It will no longer open.");
-          await refreshManagedLinks();
-        } catch (error) {
-          revokeButton.disabled = false;
-          setLinkManagerStatus(error.message || "Could not revoke this link.", true);
-        }
-      });
-      row.append(revokeButton);
-    }
-    linkList.append(row);
-  });
-}
-
-async function refreshManagedLinks() {
-  setLinkManagerStatus("Loading your links…");
-  const { result, serviceUrl } = await linkServiceRequest("/api/links", { method: "GET" });
-  if (!Array.isArray(result.links)) {
-    throw new Error("The link service response did not include a link list.");
-  }
-  renderManagedLinks(result.links, serviceUrl);
-  setLinkManagerStatus(`${result.links.length} ${result.links.length === 1 ? "link" : "links"} in your manager.`);
-}
-
-async function createManagedLink() {
-  const expiryHours = Number(document.querySelector(".link-expiry").value);
-  if (!Number.isInteger(expiryHours) || expiryHours < 1 || expiryHours > 8760) {
-    setLinkManagerStatus("Choose an expiry between 1 hour and 1 year.", true);
-    return;
-  }
-
-  const createButton = document.querySelector(".link-create");
-  createButton.disabled = true;
-  setLinkManagerStatus("Creating a new expiring link…");
-  try {
-    const { result } = await linkServiceRequest("/api/links", {
-      method: "POST",
-      body: JSON.stringify({ expiresInHours: expiryHours }),
-    });
-    if (
-      typeof result.id !== "string" ||
-      typeof result.token !== "string" ||
-      typeof result.expiresAt !== "string"
-    ) {
-      throw new Error("The link service returned incomplete link details.");
-    }
-    managedLinkTokens.set(result.id, result.token);
-    saveManagedLinkTokens();
-    await refreshManagedLinks();
-    setLinkManagerStatus(`Link created. It expires ${formatLinkDate(result.expiresAt)}.`);
-  } catch (error) {
-    setLinkManagerStatus(error.message || "Could not create a link.", true);
-  } finally {
-    createButton.disabled = false;
-  }
-}
-
 function updateMenu(open) {
   menuToggle.setAttribute("aria-expanded", String(open));
   siteNavigation.classList.toggle("is-open", open);
@@ -1079,40 +880,6 @@ document.querySelector(".portfolio-grid").addEventListener("click", (event) => {
   lightbox.showModal();
 });
 
-document.querySelector(".editor-links").addEventListener("click", async () => {
-  editorPanel.hidden = true;
-  if (!linkManager.open) {
-    linkManager.showModal();
-  }
-  if (linkServiceUrl.value.trim() && linkAdminSecret.value.trim()) {
-    try {
-      await refreshManagedLinks();
-    } catch (error) {
-      setLinkManagerStatus(error.message || "Could not load your links.", true);
-    }
-  }
-});
-
-document.querySelector(".link-manager-close").addEventListener("click", () => linkManager.close());
-linkManager.addEventListener("click", (event) => {
-  if (event.target === linkManager) {
-    linkManager.close();
-  }
-});
-document.querySelector(".link-create").addEventListener("click", createManagedLink);
-document.querySelector(".link-refresh").addEventListener("click", async () => {
-  try {
-    await refreshManagedLinks();
-  } catch (error) {
-    setLinkManagerStatus(error.message || "Could not refresh your links.", true);
-  }
-});
-linkManager.addEventListener("close", () => {
-  if (isEditing && !editorPanel.classList.contains("has-error")) {
-    editorPanel.hidden = false;
-  }
-});
-
 document.querySelector(".lightbox-close").addEventListener("click", () => lightbox.close());
 
 lightbox.addEventListener("click", (event) => {
@@ -1144,7 +911,6 @@ document.querySelectorAll(".custom-work-card").forEach((card) => {
 });
 restoreContactDetails();
 addPhotoControls();
-restoreManagedLinkTokens();
 document.querySelector("#current-year").textContent = new Date().getFullYear();
 
 let initialTheme = "light";

@@ -343,42 +343,9 @@
         <span>INSTAGRAM URL</span>
         <input class="editor-instagram" type="url" placeholder="https://instagram.com/you" aria-label="Portfolio Instagram URL" />
       </label>
-      <button class="editor-links" type="button">MANAGE EXPIRING LINKS</button>
       <button class="editor-export" type="button">DOWNLOAD MY WEBSITE</button>
       <button class="editor-reset" type="button">RESET SAMPLE CONTENT</button>
       <button class="editor-done" type="button">DONE EDITING</button>
     </aside>
-    <dialog class="link-manager" aria-labelledby="link-manager-title">
-      <button class="link-manager-close" type="button" aria-label="Close link manager">×</button>
-      <p class="eyebrow">PRIVATE ADMIN TOOL</p>
-      <h2 id="link-manager-title">Expiring <em>links.</em></h2>
-      <p class="link-manager-note">Create links to the published portfolio and revoke them whenever you like. Links expire automatically.</p>
-      <label class="link-field">
-        <span>WORKER SERVICE URL</span>
-        <input class="link-service-url" type="url" placeholder="https://your-link-service.workers.dev" autocomplete="url" />
-      </label>
-      <label class="link-field">
-        <span>ADMIN SECRET</span>
-        <input class="link-admin-secret" type="password" autocomplete="current-password" />
-      </label>
-      <div class="link-create-row">
-        <label class="link-field">
-          <span>EXPIRES AFTER</span>
-          <select class="link-expiry">
-            <option value="1">1 hour</option>
-            <option value="24" selected>24 hours</option>
-            <option value="168">7 days</option>
-            <option value="720">30 days</option>
-          </select>
-        </label>
-        <button class="link-create" type="button">CREATE LINK</button>
-      </div>
-      <p class="link-manager-status" role="status" aria-live="polite"></p>
-      <div class="link-results">
-        <div class="link-list-heading"><h3>Your links</h3><button class="link-refresh" type="button">REFRESH</button></div>
-        <ul class="link-list"></ul>
-      </div>
-      <p class="link-manager-footnote">This service gates the generated URL only. The GitHub Pages portfolio remains public at its regular address.</p>
-    </dialog>
   </body>
 </html>
